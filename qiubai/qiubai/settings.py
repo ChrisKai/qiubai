@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os
+
 # Scrapy settings for qiubai project
 #
 # For simplicity, this file contains only settings considered important or
@@ -64,9 +66,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'qiubai.pipelines.SomePipeline': 300,
-#}
+ITEM_PIPELINES = {
+   'qiubai.pipelines.MongoPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -88,3 +90,64 @@ ROBOTSTXT_OBEY = True
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+SCHEDULER = 'scrapy_redis.scheduler.Scheduler'
+SCHEDULER_PERSIST = True
+DUPEFILTER_CLASS = 'scrapy_redis.dupefilter.RFPDupeFilter'
+SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.SpiderPriorityQueue'
+
+REDIS_HOST = "127.0.0.1"
+REDIS_PORT = 6379
+
+REDIRECT_ENABLED = False
+
+LOG_PATH = os.path.dirname(os.path.abspath(__name__)) + '/log'
+if not os.path.exists(LOG_PATH):
+    os.mkdir(LOG_PATH)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'basic': {
+            'format': '%(levelname)s - %(asctime)s - %(module)s - %(message)s'
+        }
+    },
+
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'basic',
+            'stream': 'ext://sys.stdout'
+        },
+
+        'info_file_handler': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'basic',
+            'filename': os.path.join(LOG_PATH, 'info.log'),
+            'encoding': 'utf8'
+        },
+
+        'warn_file_handler': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'WARNING',
+            'formatter': 'basic',
+            'filename': os.path.join(LOG_PATH, 'warn.log'),
+            'encoding': 'utf8'
+        },
+
+        'error_file_handler': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'ERROR',
+            'formatter': 'basic',
+            'filename': os.path.join(LOG_PATH, 'error.log'),
+            'encoding': 'utf8'
+        }
+    },
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console', 'info_file_handler', 'warn_file_handler', 'error_file_handler']
+    }
+}
