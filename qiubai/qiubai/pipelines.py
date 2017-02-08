@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import pymongo
+from settings import MONGO_HOST, MONGO_PORT
 from items import EmbarrassingIndexItem, PersonalInformationItem, FollowsItem, FansEachItem, FansItem
 
 # Define your item pipelines here
@@ -16,26 +18,27 @@ class QiubaiPipeline(object):
 
 class MongoPipeline(object):
     def __init__(self):
-        client = pymongo.MongoClient("localhost", 27017)
-        db = client["qiubai"]
-        self.embarrassing_index = db["embarrassing_index"]
-        self.personal_information = db["personal_information"]
-        self.follows = db["follows"]
-        self.fans_each = db["fans_each"]
-        self.fans = db["fans"]
+        client = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
+        db = client['qiubai']
+        self.embarrassing_index = db['embarrassing_index']
+        self.personal_information = db['personal_information']
+        self.follows = db['follows']
+        self.fans_each = db['fans_each']
+        self.fans = db['fans']
+        self.logger = logging.getLogger(__name__)
 
     def process_item(self, item, spider):
-        """ 判断item的类型，并作相应的处理，再入数据库 """
+        """ Judge items type, and store it into mongo"""
         if isinstance(item, EmbarrassingIndexItem):
             try:
                 self.embarrassing_index.insert(dict(item))
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.info('糗百指数存储失败：' + str(e))
         elif isinstance(item, PersonalInformationItem):
             try:
                 self.personal_information.insert(dict(item))
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.info('个人信息存储失败：' + str(e))
         elif isinstance(item, FollowsItem):
             follow_items = dict(item)
             follows = follow_items.pop("follows")
@@ -43,8 +46,8 @@ class MongoPipeline(object):
                 follow_items[str(i + 1)] = follows[i]
             try:
                 self.follows.insert(follow_items)
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.info('关注人存储失败：' + str(e))
         elif isinstance(item, FansEachItem):
             fan_each_items = dict(item)
             follows = fan_each_items.pop("fans_each")
@@ -52,15 +55,15 @@ class MongoPipeline(object):
                 fan_each_items[str(i + 1)] = follows[i]
             try:
                 self.fans_each.insert(fan_each_items)
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.info('互粉好友存储失败：' + str(e))
         elif isinstance(item, FansItem):
             fan_items = dict(item)
-            fans = fan_items.pop("fans")
+            fans = fan_items.pop('fans')
             for i in range(len(fans)):
                 fan_items[str(i + 1)] = fans[i]
             try:
                 self.fans.insert(fan_items)
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.info('好友id存储失败：' + str(e))
         return item
