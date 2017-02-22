@@ -24,8 +24,7 @@ class Spider(RedisSpider):
             yield Request(url="http://www.qiushibaike.com/users/{0}/followers/".format(user_id),
                           callback=self.parse_follows_fans)
 
-    @staticmethod
-    def parse_information(response):
+    def parse_information(self, response):
         selector = Selector(response)
         personal_information = PersonalInformationItem()  # 获取用户个人信息
         embarrassing_index = EmbarrassingIndexItem()  # 获取糗百指数列表

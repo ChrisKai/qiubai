@@ -5,7 +5,11 @@
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
+import random
+
 from scrapy import signals
+
+import agents
 
 
 class QiubaiSpiderMiddleware(object):
@@ -54,3 +58,17 @@ class QiubaiSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class UserAgentMiddleware(object):
+    """使用随机的user-agent"""
+    def process_request(self, request, spider):
+        agent = random.choice(agents)
+        request.headers['User-Agent'] = agent
+
+
+# class ProxyMiddleware(object):
+#     """使用代理"""
+#     @staticmethod
+#     def process_request(self, request, spider):
+#         request.meta['proxy'] = 'http://118.99.23.163/proxy/'

@@ -28,7 +28,7 @@ class MongoPipeline(object):
         self.logger = logging.getLogger(__name__)
 
     def process_item(self, item, spider):
-        """ Judge items type, and store it into mongo"""
+        """判断item类型，并将其存储至相应数据库"""
         if isinstance(item, EmbarrassingIndexItem):
             try:
                 self.embarrassing_index.insert(dict(item))
